@@ -1,0 +1,9 @@
+{
+  "name": "flagAI",
+  "version": "1.0.0",
+  "description": "AI-powered contract red flag checker",
+  "main": "api/analyze.js",
+  "engines": {
+    "node": ">=18"
+  }
+}
