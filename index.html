@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FlagAI — AI Contract Risk Checker</title>
+<meta name="description" content="Upload any contract. Get plain-English explanations of risky clauses in seconds."/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
+:root{--ink:#0C0E14;--paper:#F5F3EE;--cream:#EDE9E0;--red:#D63535;--red-dim:#F5E5E5;--muted:#7A7670;--border:#D8D4CB;--card:#FAF8F4;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:20px 48px;border-bottom:1px solid var(--border);background:var(--paper);position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);text-decoration:none;}
+.logo-mark{width:32px;height:32px;background:var(--red);border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;}
+.nav-links{display:flex;align-items:center;gap:32px;list-style:none;}
+.nav-links a{color:var(--muted);font-size:14px;font-weight:500;text-decoration:none;transition:color .15s;}
+.nav-links a:hover{color:var(--ink);}
+.nav-cta{background:var(--ink)!important;color:var(--paper)!important;padding:9px 20px!important;border-radius:8px!important;font-weight:600!important;}
+.hero{max-width:900px;margin:0 auto;padding:96px 48px 72px;text-align:center;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--red-dim);color:var(--red);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:28px;border:1px solid rgba(214,53,53,.2);}
+.hero-eyebrow::before{content:'';width:7px;height:7px;background:var(--red);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,72px);font-weight:400;line-height:1.08;letter-spacing:-1.5px;margin-bottom:24px;}
+.hero h1 em{font-style:italic;color:var(--red);}
+.hero-sub{font-size:18px;color:var(--muted);max-width:560px;margin:0 auto 40px;line-height:1.7;}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+.btn-primary{background:var(--red);color:white;padding:14px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 4px 20px rgba(214,53,53,.25);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(214,53,53,.35);}
+.btn-ghost{background:transparent;color:var(--ink);padding:14px 28px;border-radius:10px;font-size:15px;font-weight:600;text-decoration:none;border:1.5px solid var(--border);transition:all .2s;}
+.btn-ghost:hover{border-color:var(--ink);}
+.hero-note{margin-top:18px;font-size:12px;color:var(--muted);}
+.demo-section{max-width:920px;margin:0 auto 80px;padding:0 48px;}
+.demo-window{background:#0C0E14;border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.18);border:1px solid #2A2D3E;}
+.demo-titlebar{background:#13161F;padding:14px 20px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #2A2D3E;}
+.demo-dot{width:12px;height:12px;border-radius:50%;}
+.demo-dot.r{background:#FF5F57;}.demo-dot.y{background:#FEBC2E;}.demo-dot.g{background:#28C840;}
+.demo-url{background:#1C1F2E;border-radius:6px;padding:5px 14px;font-size:12px;color:#6B7194;margin-left:12px;font-family:monospace;}
+.demo-body{display:grid;grid-template-columns:1fr 1fr;min-height:320px;}
+.demo-left{border-right:1px solid #2A2D3E;padding:24px;}
+.demo-right{padding:24px;}
+.demo-label{font-size:10px;font-weight:700;color:#6B7194;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+.demo-file{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#22C55E;margin-bottom:14px;}
+.demo-analyze{background:#6366F1;color:white;border-radius:8px;padding:11px;text-align:center;font-size:13px;font-weight:700;}
+.demo-risk-banner{background:rgba(239,68,68,.08);border:1px solid #EF4444;border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#FCA5A5;}
+.demo-flag{background:#1C1F2E;border:1px solid #2A2D3E;border-radius:8px;padding:12px 14px;margin-bottom:8px;}
+.demo-flag-top{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.demo-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;text-transform:uppercase;}
+.demo-badge.h{background:rgba(239,68,68,.12);color:#EF4444;border:1px solid #EF4444;}
+.demo-badge.m{background:rgba(249,115,22,.12);color:#F97316;border:1px solid #F97316;}
+.demo-flag-title{font-size:12px;font-weight:600;color:#E8EAF0;}
+.demo-flag-desc{font-size:11px;color:#6B7194;line-height:1.5;}
+.trust-strip{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:18px 48px;display:flex;align-items:center;justify-content:center;gap:48px;flex-wrap:wrap;background:var(--cream);}
+.trust-item{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;font-weight:500;}
+.section{max-width:900px;margin:0 auto;padding:80px 48px;}
+.section-head{text-align:center;margin-bottom:56px;}
+.section-eyebrow{font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+.section-head h2{font-family:'DM Serif Display',serif;font-size:clamp(32px,4vw,44px);font-weight:400;line-height:1.15;letter-spacing:-.5px;}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 24px;}
+.step-num{font-family:'DM Serif Display',serif;font-size:48px;color:var(--border);line-height:1;margin-bottom:14px;}
+.step h3{font-size:16px;font-weight:700;margin-bottom:8px;}
+.step p{font-size:14px;color:var(--muted);line-height:1.7;}
+.features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;}
+.feature-icon{width:44px;height:44px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;border:1px solid var(--border);}
+.feature-card h3{font-size:16px;font-weight:700;margin-bottom:8px;}
+.feature-card p{font-size:14px;color:var(--muted);line-height:1.7;}
+.cta-section{max-width:700px;margin:0 auto;padding:96px 48px;text-align:center;}
+.cta-section h2{font-family:'DM Serif Display',serif;font-size:clamp(36px,5vw,52px);font-weight:400;line-height:1.1;letter-spacing:-.5px;margin-bottom:20px;}
+.cta-section p{font-size:17px;color:var(--muted);margin-bottom:36px;line-height:1.7;}
+footer{border-top:1px solid var(--border);padding:32px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.footer-logo{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink);}
+footer p{font-size:13px;color:var(--muted);}
+@media(max-width:768px){
+  nav{padding:16px 20px;} .nav-links{display:none;}
+  .hero{padding:60px 24px 48px;} .demo-section{padding:0 24px;}
+  .demo-body{grid-template-columns:1fr;} .demo-left{border-right:none;border-bottom:1px solid #2A2D3E;}
+  .trust-strip{padding:18px 24px;gap:24px;} .section{padding:56px 24px;}
+  .steps{grid-template-columns:1fr;} .features-grid{grid-template-columns:1fr;}
+  .cta-section{padding:64px 24px;} footer{padding:24px 20px;flex-direction:column;text-align:center;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="#"><div class="logo-mark">🚩</div>FlagAI</a>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="app/">Try it free →</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-eyebrow">AI-powered contract review</div>
+  <h1>Know what you're signing<br/><em>before</em> you sign it.</h1>
+  <p class="hero-sub">Upload any contract — employment, rental, freelance, NDA — and get a plain-English breakdown of every risky clause in seconds.</p>
+  <div class="hero-actions">
+    <a href="app/" class="btn-primary">Analyze a contract →</a>
+    <a href="#how-it-works" class="btn-ghost">See how it works</a>
+  </div>
+  <p class="hero-note">No account needed · No lawyer required · Results in under 30 seconds</p>
+</section>
+
+<div class="demo-section">
+  <div class="demo-window">
+    <div class="demo-titlebar">
+      <div class="demo-dot r"></div><div class="demo-dot y"></div><div class="demo-dot g"></div>
+      <div class="demo-url">flagAI · Contract Risk Checker</div>
+    </div>
+    <div class="demo-body">
+      <div class="demo-left">
+        <div class="demo-label">Upload Contract</div>
+        <div class="demo-file">✅ &nbsp;employment_contract.pdf · 12 pages</div>
+        <div class="demo-analyze">🔍 &nbsp;Analyze Contract</div>
+      </div>
+      <div class="demo-right">
+        <div class="demo-label">Risk Analysis</div>
+        <div class="demo-risk-banner">🚨 &nbsp;<strong>HIGH RISK</strong> — 3 critical clauses found</div>
+        <div class="demo-flag">
+          <div class="demo-flag-top"><span class="demo-badge h">High</span><span class="demo-flag-title">Unlimited Non-Compete Clause</span></div>
+          <div class="demo-flag-desc">Bars you from working in the entire industry for 3 years after leaving.</div>
+        </div>
+        <div class="demo-flag">
+          <div class="demo-flag-top"><span class="demo-badge h">High</span><span class="demo-flag-title">IP Ownership of Personal Projects</span></div>
+          <div class="demo-flag-desc">Company claims all work you create, even on personal time and equipment.</div>
+        </div>
+        <div class="demo-flag">
+          <div class="demo-flag-top"><span class="demo-badge m">Medium</span><span class="demo-flag-title">Unilateral Salary Modification</span></div>
+          <div class="demo-flag-desc">Employer can change your pay with only 7 days notice.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="trust-strip">
+  <div class="trust-item">🔒 Your data is never stored</div>
+  <div class="trust-item">⚡ Results in under 30 seconds</div>
+  <div class="trust-item">📖 Plain English, no legal jargon</div>
+  <div class="trust-item">📄 PDF, DOCX &amp; text contracts</div>
+</div>
+
+<section class="section" id="how-it-works">
+  <div class="section-head">
+    <div class="section-eyebrow">How it works</div>
+    <h2>Three steps to understand<br/>any contract</h2>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><h3>Upload your contract</h3><p>Drop a PDF or paste contract text. Supports employment agreements, NDAs, rental contracts, freelance agreements, and more.</p></div>
+    <div class="step"><div class="step-num">2</div><h3>AI reads every clause</h3><p>Our AI reads the entire contract, identifies risky or one-sided clauses, and classifies each by severity: High, Medium, or Low risk.</p></div>
+    <div class="step"><div class="step-num">3</div><h3>Get a plain-English report</h3><p>Each flagged clause comes with an explanation of what it means for you, and a specific recommendation on what to negotiate.</p></div>
+  </div>
+</section>
+
+<section class="section" id="features" style="padding-top:0">
+  <div class="section-head">
+    <div class="section-eyebrow">Features</div>
+    <h2>Everything you need to<br/>review contracts confidently</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card"><div class="feature-icon">🚩</div><h3>Risk-Level Classification</h3><p>Every flagged clause is classified as High, Medium, or Low risk — so you know exactly what to focus on first.</p></div>
+    <div class="feature-card"><div class="feature-icon">💡</div><h3>Negotiation Recommendations</h3><p>Every flag comes with a concrete recommendation for how to push back or protect yourself.</p></div>
+    <div class="feature-card"><div class="feature-icon">📥</div><h3>Downloadable Risk Report</h3><p>Export a clean, shareable risk report to send to a lawyer or use when negotiating contract terms.</p></div>
+    <div class="feature-card"><div class="feature-icon">🔒</div><h3>Private by Default</h3><p>Your contracts are never stored or logged. Each analysis runs in isolation and is discarded immediately.</p></div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>Read the fine print,<br/>without the fine print.</h2>
+  <p>Upload your first contract for free. No account, no credit card — just a clear answer on what you're actually agreeing to.</p>
+  <a href="app/" class="btn-primary" style="font-size:16px;padding:16px 36px;">Analyze your contract now →</a>
+</section>
+
+<footer>
+  <div class="footer-logo">🚩 FlagAI</div>
+  <p>FlagAI is not a law firm. Results are for informational purposes only and do not constitute legal advice.</p>
+  <p style="font-size:12px;color:#7A7670;">© 2026 FlagAI</p>
+</footer>
+</body>
+</html>
