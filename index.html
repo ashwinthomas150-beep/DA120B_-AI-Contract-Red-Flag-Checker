@@ -22,8 +22,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:20px 4
 .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--red-dim);color:var(--red);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:28px;border:1px solid rgba(214,53,53,.2);}
 .hero-eyebrow::before{content:'';width:7px;height:7px;background:var(--red);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
-.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,72px);font-weight:400;line-height:1.08;letter-spacing:-1.5px;margin-bottom:24px;}
-.hero h1 em{font-style:italic;color:var(--red);}
+h1{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,72px);font-weight:400;line-height:1.08;letter-spacing:-1.5px;margin-bottom:24px;}
+h1 em{font-style:italic;color:var(--red);}
 .hero-sub{font-size:18px;color:var(--muted);max-width:560px;margin:0 auto 40px;line-height:1.7;}
 .hero-actions{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
 .btn-primary{background:var(--red);color:white;padding:14px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 4px 20px rgba(214,53,53,.25);}
@@ -73,37 +73,28 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:20px 4
 footer{border-top:1px solid var(--border);padding:32px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
 .footer-logo{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink);}
 footer p{font-size:13px;color:var(--muted);}
-@media(max-width:768px){
-  nav{padding:16px 20px;} .nav-links{display:none;}
-  .hero{padding:60px 24px 48px;} .demo-section{padding:0 24px;}
-  .demo-body{grid-template-columns:1fr;} .demo-left{border-right:none;border-bottom:1px solid #2A2D3E;}
-  .trust-strip{padding:18px 24px;gap:24px;} .section{padding:56px 24px;}
-  .steps{grid-template-columns:1fr;} .features-grid{grid-template-columns:1fr;}
-  .cta-section{padding:64px 24px;} footer{padding:24px 20px;flex-direction:column;text-align:center;}
-}
+@media(max-width:768px){nav{padding:16px 20px;}.nav-links{display:none;}.hero{padding:60px 24px 48px;}.demo-section{padding:0 24px;}.demo-body{grid-template-columns:1fr;}.demo-left{border-right:none;border-bottom:1px solid #2A2D3E;}.trust-strip{padding:18px 24px;gap:24px;}.section{padding:56px 24px;}.steps{grid-template-columns:1fr;}.features-grid{grid-template-columns:1fr;}.cta-section{padding:64px 24px;}footer{padding:24px 20px;flex-direction:column;text-align:center;}}
 </style>
 </head>
 <body>
 <nav>
-  <a class="nav-logo" href="#"><div class="logo-mark">🚩</div>FlagAI</a>
+  <a class="nav-logo" href="/"><div class="logo-mark">🚩</div>FlagAI</a>
   <ul class="nav-links">
     <li><a href="#how-it-works">How it works</a></li>
     <li><a href="#features">Features</a></li>
-    <li><a href="app/">Try it free →</a></li>
+    <li><a href="/app/" class="nav-cta">Try it free →</a></li>
   </ul>
 </nav>
-
 <section class="hero">
   <div class="hero-eyebrow">AI-powered contract review</div>
   <h1>Know what you're signing<br/><em>before</em> you sign it.</h1>
   <p class="hero-sub">Upload any contract — employment, rental, freelance, NDA — and get a plain-English breakdown of every risky clause in seconds.</p>
   <div class="hero-actions">
-    <a href="app/" class="btn-primary">Analyze a contract →</a>
+    <a href="/app/" class="btn-primary">Analyze a contract →</a>
     <a href="#how-it-works" class="btn-ghost">See how it works</a>
   </div>
-  <p class="hero-note">No account needed · No lawyer required · Results in under 30 seconds</p>
+  <p class="hero-note">No account needed · No API key required · Results in under 30 seconds</p>
 </section>
-
 <div class="demo-section">
   <div class="demo-window">
     <div class="demo-titlebar">
@@ -119,61 +110,41 @@ footer p{font-size:13px;color:var(--muted);}
       <div class="demo-right">
         <div class="demo-label">Risk Analysis</div>
         <div class="demo-risk-banner">🚨 &nbsp;<strong>HIGH RISK</strong> — 3 critical clauses found</div>
-        <div class="demo-flag">
-          <div class="demo-flag-top"><span class="demo-badge h">High</span><span class="demo-flag-title">Unlimited Non-Compete Clause</span></div>
-          <div class="demo-flag-desc">Bars you from working in the entire industry for 3 years after leaving.</div>
-        </div>
-        <div class="demo-flag">
-          <div class="demo-flag-top"><span class="demo-badge h">High</span><span class="demo-flag-title">IP Ownership of Personal Projects</span></div>
-          <div class="demo-flag-desc">Company claims all work you create, even on personal time and equipment.</div>
-        </div>
-        <div class="demo-flag">
-          <div class="demo-flag-top"><span class="demo-badge m">Medium</span><span class="demo-flag-title">Unilateral Salary Modification</span></div>
-          <div class="demo-flag-desc">Employer can change your pay with only 7 days notice.</div>
-        </div>
+        <div class="demo-flag"><div class="demo-flag-top"><span class="demo-badge h">High</span><span class="demo-flag-title">Unlimited Non-Compete Clause</span></div><div class="demo-flag-desc">Bars you from working in the entire industry for 3 years after leaving.</div></div>
+        <div class="demo-flag"><div class="demo-flag-top"><span class="demo-badge h">High</span><span class="demo-flag-title">IP Ownership of Personal Projects</span></div><div class="demo-flag-desc">Company claims all work you create, even on personal time and equipment.</div></div>
+        <div class="demo-flag"><div class="demo-flag-top"><span class="demo-badge m">Medium</span><span class="demo-flag-title">Unilateral Salary Modification</span></div><div class="demo-flag-desc">Employer can change your pay with only 7 days notice.</div></div>
       </div>
     </div>
   </div>
 </div>
-
 <div class="trust-strip">
   <div class="trust-item">🔒 Your data is never stored</div>
   <div class="trust-item">⚡ Results in under 30 seconds</div>
   <div class="trust-item">📖 Plain English, no legal jargon</div>
-  <div class="trust-item">📄 PDF, DOCX &amp; text contracts</div>
+  <div class="trust-item">🔑 No API key needed</div>
 </div>
-
 <section class="section" id="how-it-works">
-  <div class="section-head">
-    <div class="section-eyebrow">How it works</div>
-    <h2>Three steps to understand<br/>any contract</h2>
-  </div>
+  <div class="section-head"><div class="section-eyebrow">How it works</div><h2>Three steps to understand<br/>any contract</h2></div>
   <div class="steps">
     <div class="step"><div class="step-num">1</div><h3>Upload your contract</h3><p>Drop a PDF or paste contract text. Supports employment agreements, NDAs, rental contracts, freelance agreements, and more.</p></div>
     <div class="step"><div class="step-num">2</div><h3>AI reads every clause</h3><p>Our AI reads the entire contract, identifies risky or one-sided clauses, and classifies each by severity: High, Medium, or Low risk.</p></div>
     <div class="step"><div class="step-num">3</div><h3>Get a plain-English report</h3><p>Each flagged clause comes with an explanation of what it means for you, and a specific recommendation on what to negotiate.</p></div>
   </div>
 </section>
-
 <section class="section" id="features" style="padding-top:0">
-  <div class="section-head">
-    <div class="section-eyebrow">Features</div>
-    <h2>Everything you need to<br/>review contracts confidently</h2>
-  </div>
+  <div class="section-head"><div class="section-eyebrow">Features</div><h2>Everything you need to<br/>review contracts confidently</h2></div>
   <div class="features-grid">
     <div class="feature-card"><div class="feature-icon">🚩</div><h3>Risk-Level Classification</h3><p>Every flagged clause is classified as High, Medium, or Low risk — so you know exactly what to focus on first.</p></div>
     <div class="feature-card"><div class="feature-icon">💡</div><h3>Negotiation Recommendations</h3><p>Every flag comes with a concrete recommendation for how to push back or protect yourself.</p></div>
     <div class="feature-card"><div class="feature-icon">📥</div><h3>Downloadable Risk Report</h3><p>Export a clean, shareable risk report to send to a lawyer or use when negotiating contract terms.</p></div>
-    <div class="feature-card"><div class="feature-icon">🔒</div><h3>Private by Default</h3><p>Your contracts are never stored or logged. Each analysis runs in isolation and is discarded immediately.</p></div>
+    <div class="feature-card"><div class="feature-icon">🔒</div><h3>Private by Default</h3><p>Your contracts are never stored. Each analysis runs in isolation and is discarded immediately after results are returned.</p></div>
   </div>
 </section>
-
 <section class="cta-section">
   <h2>Read the fine print,<br/>without the fine print.</h2>
-  <p>Upload your first contract for free. No account, no credit card — just a clear answer on what you're actually agreeing to.</p>
-  <a href="app/" class="btn-primary" style="font-size:16px;padding:16px 36px;">Analyze your contract now →</a>
+  <p>Upload your first contract for free. No account, no API key — just a clear answer on what you're actually agreeing to.</p>
+  <a href="/app/" class="btn-primary" style="font-size:16px;padding:16px 36px;">Analyze your contract now →</a>
 </section>
-
 <footer>
   <div class="footer-logo">🚩 FlagAI</div>
   <p>FlagAI is not a law firm. Results are for informational purposes only and do not constitute legal advice.</p>
