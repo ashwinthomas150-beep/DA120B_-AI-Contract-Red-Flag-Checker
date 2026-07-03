@@ -1,0 +1,12 @@
+.app-shell { display: flex; flex-direction: column; height: 100vh; }
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+@media (max-width: 860px) {
+  .app-layout { grid-template-columns: 1fr; overflow: auto; }
+}
