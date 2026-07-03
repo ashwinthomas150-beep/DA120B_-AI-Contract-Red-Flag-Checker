@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Contract Red Flag Checker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root {
+    --bg: #0B0D14;
+    --surface: #13161F;
+    --card: #1C1F2E;
+    --border: #2A2D3E;
+    --border-hover: #3D4060;
+    --text: #E8EAF0;
+    --muted: #6B7194;
+    --red: #EF4444;
+    --red-bg: rgba(239,68,68,0.08);
+    --orange: #F97316;
+    --orange-bg: rgba(249,115,22,0.08);
+    --yellow: #FBBF24;
+    --yellow-bg: rgba(251,191,36,0.08);
+    --green: #22C55E;
+    --green-bg: rgba(34,197,94,0.08);
+    --accent: #6366F1;
+    --accent-light: rgba(99,102,241,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-icon svg { width: 20px; height: 20px; fill: white; }
+
+  header h1 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+  header p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    height: calc(100vh - 65px);
+    position: sticky;
+    top: 65px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  /* API Key */
+  .api-row {
+    display: flex;
+    gap: 8px;
+  }
+  .api-row input {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 13px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    outline: none;
+    transition: border 0.15s;
+  }
+  .api-row input:focus { border-color: var(--accent); }
+
+  .toggle-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 13px;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .toggle-btn:hover { border-color: var(--border-hover); color: var(--text); }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--card);
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  }
+  .upload-icon {
+    width: 40px; height: 40px;
+    background: var(--accent-light);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .upload-icon svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; }
+  .upload-zone h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .upload-zone p { font-size: 12px; color: var(--muted); }
+  .upload-zone .file-name {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--muted); font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border);
+  }
+
+  /* Textarea */
+  .contract-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    resize: vertical;
+    min-height: 200px;
+    outline: none;
+    transition: border 0.15s;
+    line-height: 1.7;
+  }
+  .contract-input:focus { border-color: var(--accent); }
+  .contract-input::placeholder { color: var(--muted); }
+
+  /* Char counter */
+  .char-count { font-size: 12px; color: var(--muted); text-align: right; }
+
+  /* Analyze button */
+  .analyze-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s;
+    letter-spacing: -0.2px;
+  }
+  .analyze-btn:hover:not(:disabled) { background: #4F52D1; transform: translateY(-1px); }
+  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .analyze-btn svg { width: 18px; height: 18px; stroke: white; fill: none; }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    padding: 32px;
+    overflow-y: auto;
+  }
+
+  /* Empty state */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 400px;
+    text-align: center;
+    gap: 16px;
+  }
+  .empty-icon {
+    width: 72px; height: 72px;
+    background: var(--card);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+  }
+  .empty-icon svg { width: 36px; height: 36px; stroke: var(--muted); fill: none; }
+  .empty-state h2 { font-size: 20px; font-weight: 700; color: var(--text); }
+  .empty-state p { font-size: 14px; color: var(--muted); max-width: 340px; line-height: 1.7; }
+
+  /* Scanning animation */
+  @keyframes scanPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  .scanning-state {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; height: 100%; min-height: 400px; gap: 20px; text-align: center;
+  }
+  .scan-visual {
+    width: 120px; height: 140px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+    padding: 12px 10px; gap: 6px;
+  }
+  .scan-line-item {
+    height: 6px; border-radius: 3px;
+    background: var(--border);
+    animation: scanPulse 1.5s ease-in-out infinite;
+  }
+  .scan-line-item:nth-child(2) { width: 70%; animation-delay: 0.2s; }
+  .scan-line-item:nth-child(3) { width: 90%; animation-delay: 0.4s; }
+  .scan-line-item:nth-child(4) { width: 60%; animation-delay: 0.6s; }
+  .scan-line-item:nth-child(5) { width: 85%; animation-delay: 0.8s; }
+  .scan-line-item:nth-child(6) { width: 75%; animation-delay: 1s; }
+  .scan-beam {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: scanBeam 1.8s ease-in-out infinite;
+  }
+  @keyframes scanBeam {
+    0% { top: 0; opacity: 1; }
+    90% { top: 100%; opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+  .scanning-state h3 { font-size: 18px; font-weight: 700; }
+  .scanning-state p { font-size: 14px; color: var(--muted); }
+
+  /* Results */
+  .results-header {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 16px;
+    margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .results-header h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .results-header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .export-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 7px;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .export-btn:hover { border-color: var(--border-hover); background: var(--border); }
+  .export-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; }
+
+  /* Score card */
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .score-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .score-card .num {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -1px; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .score-card .label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .score-card.risk-high .num { color: var(--red); }
+  .score-card.risk-medium .num { color: var(--orange); }
+  .score-card.risk-low .num { color: var(--yellow); }
+  .score-card.risk-overall .num { color: var(--text); }
+
+  /* Overall risk banner */
+  .risk-banner {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 14px;
+    border: 1px solid;
+  }
+  .risk-banner.HIGH { background: var(--red-bg); border-color: var(--red); }
+  .risk-banner.MEDIUM { background: var(--orange-bg); border-color: var(--orange); }
+  .risk-banner.LOW { background: var(--yellow-bg); border-color: var(--yellow); }
+  .risk-banner.SAFE { background: var(--green-bg); border-color: var(--green); }
+  .risk-banner-icon { font-size: 24px; flex-shrink: 0; }
+  .risk-banner-text h3 { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .risk-banner-text p { font-size: 13px; opacity: 0.85; }
+
+  /* Flags list */
+  .flags-title {
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .flag-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .flag-card:hover { border-color: var(--border-hover); }
+
+  .flag-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+  }
+  .risk-badge {
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 3px 8px; border-radius: 5px;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+  .risk-badge.HIGH { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+  .risk-badge.MEDIUM { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange); }
+  .risk-badge.LOW { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow); }
+
+  .flag-title { font-size: 14px; font-weight: 600; flex: 1; }
+  .flag-chevron {
+    width: 16px; height: 16px;
+    stroke: var(--muted); fill: none;
+    transition: transform 0.2s; flex-shrink: 0;
+  }
+  .flag-card.open .flag-chevron { transform: rotate(180deg); }
+
+  .flag-body {
+    display: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .flag-card.open .flag-body { display: block; }
+
+  .flag-clause {
+    background: var(--bg);
+    border-left: 3px solid var(--border-hover);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    color: var(--muted);
+    line-height: 1.8;
+    font-style: italic;
+  }
+
+  .flag-explanation { font-size: 13px; color: #C4C9DC; line-height: 1.7; margin-bottom: 10px; }
+
+  .flag-recommendation {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: 12px;
+    color: #A5B4FC;
+    line-height: 1.6;
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .flag-recommendation::before { content: '💡'; flex-shrink: 0; }
+
+  /* Summary section */
+  .summary-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+  }
+  .summary-section h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .summary-section p { font-size: 13px; color: #C4C9DC; line-height: 1.75; }
+
+  /* Error */
+  .error-box {
+    background: var(--red-bg);
+    border: 1px solid var(--red);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: #FCA5A5;
+    line-height: 1.6;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .filter-chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 13px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .filter-chip.active, .filter-chip:hover { color: var(--text); border-color: var(--border-hover); }
+  .filter-chip.active.high { color: var(--red); border-color: var(--red); background: var(--red-bg); }
+  .filter-chip.active.medium { color: var(--orange); border-color: var(--orange); background: var(--orange-bg); }
+  .filter-chip.active.low { color: var(--yellow); border-color: var(--yellow); background: var(--yellow-bg); }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .left-panel { height: auto; position: relative; top: 0; }
+    .score-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">
+    <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+  </div>
+  <h1>AI Contract Red Flag Checker</h1>
+  <p>Powered by Claude AI</p>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left-panel">
+
+    <!-- API Key -->
+    <div>
+      <div class="section-label">Anthropic API Key</div>
+      <div class="api-row">
+        <input type="password" id="apiKey" placeholder="sk-ant-..." />
+        <button class="toggle-btn" onclick="toggleKey()">Show</button>
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div>
+      <div class="section-label">Upload Contract (PDF)</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" accept=".pdf,.txt" id="fileInput" onchange="handleFile(event)" />
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        </div>
+        <h3>Drop PDF or TXT here</h3>
+        <p>or click to browse</p>
+        <div class="file-name" id="fileName"></div>
+      </div>
+    </div>
+
+    <div class="divider">or paste text</div>
+
+    <!-- Text area -->
+    <div>
+      <div class="section-label">Contract Text</div>
+      <textarea class="contract-input" id="contractText" placeholder="Paste your contract text here...&#10;&#10;e.g. EMPLOYMENT AGREEMENT&#10;This agreement is entered into...&#10;" oninput="updateCount()"></textarea>
+      <div class="char-count"><span id="charCount">0</span> characters</div>
+    </div>
+
+    <!-- Analyze -->
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+      <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>
+      Analyze Contract
+    </button>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel" id="rightPanel">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+      </div>
+      <h2>No Contract Analyzed Yet</h2>
+      <p>Upload a PDF, paste your contract text on the left, and click <strong>Analyze Contract</strong> to detect risky clauses.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// PDF.js setup
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let currentFilter = 'ALL';
+let lastResults = null;
+
+function toggleKey() {
+  const input = document.getElementById('apiKey');
+  const btn = event.target;
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = 'Hide'; }
+  else { input.type = 'password'; btn.textContent = 'Show'; }
+}
+
+function updateCount() {
+  document.getElementById('charCount').textContent = document.getElementById('contractText').value.length.toLocaleString();
+}
+
+// Drag and drop
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+});
+
+async function handleFile(event) {
+  const file = event.target.files[0];
+  if (file) processFile(file);
+}
+
+async function processFile(file) {
+  document.getElementById('fileName').textContent = '⏳ Reading file...';
+  try {
+    let text = '';
+    if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages = [];
+      for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        pages.push(content.items.map(item => item.str).join(' '));
+      }
+      text = pages.join('\n\n');
+    } else {
+      text = await file.text();
+    }
+    document.getElementById('contractText').value = text;
+    updateCount();
+    document.getElementById('fileName').textContent = `✅ ${file.name} loaded`;
+  } catch (err) {
+    document.getElementById('fileName').textContent = '❌ Could not read file';
+    console.error(err);
+  }
+}
+
+async function analyze() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const text = document.getElementById('contractText').value.trim();
+
+  if (!apiKey) { alert('Please enter your Anthropic API key.'); return; }
+  if (!text || text.length < 50) { alert('Please provide contract text to analyze.'); return; }
+
+  // Show scanning
+  document.getElementById('rightPanel').innerHTML = `
+    <div class="scanning-state">
+      <div class="scan-visual">
+        <div class="scan-beam"></div>
+        <div class="scan-line-item" style="width:100%"></div>
+        <div class="scan-line-item"></div>
+        <div class="scan-line-item"></div>
+        <div class="scan-line-item"></div>
+        <div class="scan-line-item"></div>
+        <div class="scan-line-item"></div>
+      </div>
+      <h3>Analyzing Contract...</h3>
+      <p>Claude is reading your contract and identifying red flags</p>
+    </div>`;
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('analyzeBtn').innerHTML = '<div class="spinner"></div> Analyzing...';
+
+  const prompt = `You are a legal risk analyst specializing in contract review. Analyze the following contract and identify potentially risky or unfavorable clauses.
+
+Return ONLY a valid JSON object in this exact format (no markdown, no extra text):
+{
+  "overall_risk": "HIGH" | "MEDIUM" | "LOW" | "SAFE",
+  "overall_summary": "2-3 sentence plain-English summary of the contract's overall risk level and main concerns",
+  "flags": [
+    {
+      "id": 1,
+      "risk_level": "HIGH" | "MEDIUM" | "LOW",
+      "title": "Short title of the clause/issue",
+      "clause_excerpt": "The exact or paraphrased clause text from the contract (max 100 words)",
+      "explanation": "Plain-English explanation of why this is risky and what it could mean for the signer",
+      "recommendation": "What the signer should do or negotiate"
+    }
+  ]
+}
+
+Risk levels:
+- HIGH: Clauses that could cause serious financial, legal, or operational harm
+- MEDIUM: Clauses that are unfavorable or unusually restrictive  
+- LOW: Clauses worth being aware of but not immediately dangerous
+
+Analyze thoroughly. Find all notable red flags. Order flags by risk level (HIGH first).
+
+CONTRACT TEXT:
+---
+${text.substring(0, 8000)}
+---`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || `API error ${response.status}`);
+    }
+
+    const data = await response.json();
+    const rawText = data.content[0].text.trim();
+
+    // Parse JSON (strip any accidental markdown)
+    const clean = rawText.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'');
+    const result = JSON.parse(clean);
+    lastResults = result;
+    renderResults(result);
+
+  } catch (err) {
+    document.getElementById('rightPanel').innerHTML = `
+      <div style="padding: 32px;">
+        <div class="error-box">
+          <strong>Analysis failed:</strong> ${escHtml(err.message)}<br/><br/>
+          Check that your API key is correct and has credits available.
+        </div>
+      </div>`;
+  }
+
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('analyzeBtn').innerHTML = `
+    <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>
+    Analyze Contract`;
+}
+
+function renderResults(result) {
+  const flags = result.flags || [];
+  const high = flags.filter(f => f.risk_level === 'HIGH').length;
+  const medium = flags.filter(f => f.risk_level === 'MEDIUM').length;
+  const low = flags.filter(f => f.risk_level === 'LOW').length;
+
+  const riskEmoji = { HIGH: '🚨', MEDIUM: '⚠️', LOW: '📋', SAFE: '✅' };
+  const riskLabel = { HIGH: 'High Risk Contract — Immediate Review Needed', MEDIUM: 'Medium Risk — Several Clauses Need Attention', LOW: 'Low Risk — Minor Issues Found', SAFE: 'No Major Issues Detected' };
+
+  let html = `
+    <div class="results-header">
+      <div>
+        <h2>Analysis Results</h2>
+        <p>${flags.length} clause${flags.length !== 1 ? 's' : ''} flagged · ${high} high · ${medium} medium · ${low} low</p>
+      </div>
+      <button class="export-btn" onclick="exportReport()">
+        <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+        Export Report
+      </button>
+    </div>
+
+    <div class="score-grid">
+      <div class="score-card risk-high">
+        <div class="num">${high}</div>
+        <div class="label">High Risk</div>
+      </div>
+      <div class="score-card risk-medium">
+        <div class="num">${medium}</div>
+        <div class="label">Medium Risk</div>
+      </div>
+      <div class="score-card risk-low">
+        <div class="num">${low}</div>
+        <div class="label">Low Risk</div>
+      </div>
+      <div class="score-card risk-overall">
+        <div class="num">${result.overall_risk}</div>
+        <div class="label">Overall</div>
+      </div>
+    </div>
+
+    <div class="risk-banner ${result.overall_risk}">
+      <div class="risk-banner-icon">${riskEmoji[result.overall_risk] || '📋'}</div>
+      <div class="risk-banner-text">
+        <h3>${riskLabel[result.overall_risk] || result.overall_risk}</h3>
+        <p>${escHtml(result.overall_summary)}</p>
+      </div>
+    </div>
+
+    ${flags.length > 0 ? `
+    <div class="filter-bar">
+      <div class="filter-chip active" onclick="setFilter('ALL', this)">All (${flags.length})</div>
+      ${high > 0 ? `<div class="filter-chip high" onclick="setFilter('HIGH', this)">🔴 High (${high})</div>` : ''}
+      ${medium > 0 ? `<div class="filter-chip medium" onclick="setFilter('MEDIUM', this)">🟠 Medium (${medium})</div>` : ''}
+      ${low > 0 ? `<div class="filter-chip low" onclick="setFilter('LOW', this)">🟡 Low (${low})</div>` : ''}
+    </div>
+
+    <div class="flags-title">🚩 Flagged Clauses</div>
+    <div id="flagsList">
+      ${flags.map((flag, i) => `
+        <div class="flag-card" id="flag-${i}" data-risk="${flag.risk_level}">
+          <div class="flag-header" onclick="toggleFlag(${i})">
+            <span class="risk-badge ${flag.risk_level}">${flag.risk_level}</span>
+            <span class="flag-title">${escHtml(flag.title)}</span>
+            <svg class="flag-chevron" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+          </div>
+          <div class="flag-body">
+            ${flag.clause_excerpt ? `<div class="flag-clause">"${escHtml(flag.clause_excerpt)}"</div>` : ''}
+            <p class="flag-explanation">${escHtml(flag.explanation)}</p>
+            ${flag.recommendation ? `<div class="flag-recommendation">${escHtml(flag.recommendation)}</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>` : '<p style="color: var(--muted); font-size:14px;">No red flags detected in this contract.</p>'}
+
+    <div class="summary-section">
+      <h3>📋 Full Summary</h3>
+      <p>${escHtml(result.overall_summary)}</p>
+    </div>
+  `;
+
+  document.getElementById('rightPanel').innerHTML = html;
+
+  // Auto-open first HIGH flag
+  const firstHigh = flags.findIndex(f => f.risk_level === 'HIGH');
+  if (firstHigh >= 0) toggleFlag(firstHigh);
+}
+
+function toggleFlag(i) {
+  const card = document.getElementById(`flag-${i}`);
+  card.classList.toggle('open');
+}
+
+function setFilter(level, el) {
+  currentFilter = level;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+
+  document.querySelectorAll('.flag-card').forEach(card => {
+    if (level === 'ALL' || card.dataset.risk === level) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+function exportReport() {
+  if (!lastResults) return;
+  const flags = lastResults.flags || [];
+  let report = `AI CONTRACT RED FLAG CHECKER - RISK REPORT\n`;
+  report += `${'='.repeat(50)}\n\n`;
+  report += `OVERALL RISK: ${lastResults.overall_risk}\n\n`;
+  report += `SUMMARY:\n${lastResults.overall_summary}\n\n`;
+  report += `${'='.repeat(50)}\n`;
+  report += `FLAGGED CLAUSES (${flags.length} total)\n\n`;
+
+  flags.forEach((f, i) => {
+    report += `[${f.risk_level}] ${i+1}. ${f.title}\n`;
+    if (f.clause_excerpt) report += `  Clause: "${f.clause_excerpt}"\n`;
+    report += `  Issue: ${f.explanation}\n`;
+    if (f.recommendation) report += `  Recommendation: ${f.recommendation}\n`;
+    report += '\n';
+  });
+
+  const blob = new Blob([report], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'contract-risk-report.txt';
+  a.click();
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
