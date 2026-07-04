@@ -1,3 +1,4 @@
+// Frontend UI Design — Manu Joseph
 import { useState } from 'react'
 import FlagCard from './FlagCard'
 import './RightPanel.css'
