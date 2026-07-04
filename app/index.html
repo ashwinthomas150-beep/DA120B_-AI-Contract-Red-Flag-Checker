@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>FlagAI — Analyze Contract</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 :root{
@@ -18,8 +19,6 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
-
-/* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-mark{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;}
@@ -27,24 +26,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .logo-sep{font-size:12px;color:var(--muted);padding-left:10px;border-left:1px solid var(--border);margin-left:2px;}
 header a{font-size:13px;color:var(--muted);text-decoration:none;font-weight:500;}
 header a:hover{color:var(--text);}
-
-/* LAYOUT */
 .layout{display:grid;grid-template-columns:380px 1fr;flex:1;overflow:hidden;}
-
-/* LEFT */
 .left{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:16px;padding:20px;overflow-y:auto;}
 .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
 .lbl span{font-weight:400;text-transform:none;letter-spacing:0;}
-
-/* API key */
 .key-row{display:flex;gap:7px;}
 .key-row input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:12px;font-family:'DM Mono',monospace;outline:none;transition:border .15s;}
 .key-row input:focus{border-color:var(--accent);}
 .key-row input::placeholder{color:var(--muted);}
 .tog{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--muted);font-size:12px;cursor:pointer;white-space:nowrap;transition:all .15s;}
 .tog:hover{color:var(--text);border-color:var(--border-h);}
-
-/* Upload */
 .upload{border:2px dashed var(--border);border-radius:12px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--card);position:relative;}
 .upload:hover,.upload.over{border-color:var(--accent);background:var(--accent-bg);}
 .upload.loaded{border-style:solid;border-color:var(--green);background:var(--green-bg);}
@@ -54,35 +45,23 @@ header a:hover{color:var(--text);}
 .up-title{font-size:13px;font-weight:600;margin-bottom:3px;}
 .up-sub{font-size:12px;color:var(--muted);}
 .up-file{font-size:12px;font-weight:700;color:var(--green);margin-top:6px;}
-
-/* Divider */
 .div{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;}
 .div::before,.div::after{content:'';flex:1;height:1px;background:var(--border);}
-
-/* Textarea */
-textarea{width:100%;min-height:200px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:12px;font-family:'DM Mono','Courier New',monospace;resize:vertical;outline:none;line-height:1.75;transition:border .15s;}
+textarea{width:100%;min-height:180px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:12px;font-family:'DM Mono','Courier New',monospace;resize:vertical;outline:none;line-height:1.75;transition:border .15s;}
 textarea:focus{border-color:var(--accent);}
 textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;}
-
-/* Btn */
 .btn{width:100%;background:var(--accent);color:white;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;flex-shrink:0;}
 .btn svg{width:17px;height:17px;stroke:white;fill:none;}
 .btn:hover:not(:disabled){background:#4F52D1;transform:translateY(-1px);}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spin{width:17px;height:17px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
-
-/* RIGHT */
 .right{overflow-y:auto;padding:28px;}
-
-/* Empty */
 .empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;}
 .empty-ico{width:64px;height:64px;background:var(--card);border-radius:16px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
 .empty-ico svg{width:32px;height:32px;stroke:var(--muted);fill:none;}
 .empty h2{font-size:19px;font-weight:700;}
 .empty p{font-size:13px;color:var(--muted);max-width:320px;line-height:1.75;}
-
-/* Scanning */
 .scanning{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;}
 .scan-doc{width:110px;height:130px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;}
 .scan-beam{position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:beam 1.8s ease-in-out infinite;}
@@ -91,24 +70,18 @@ textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-siz
 @keyframes blink{0%,100%{opacity:.4;}50%{opacity:1;}}
 .scanning h3{font-size:17px;font-weight:700;}
 .scanning p{font-size:13px;color:var(--muted);}
-
-/* Error */
 .err{background:var(--red-bg);border:1px solid var(--red);border-radius:10px;padding:14px 16px;font-size:13px;color:#FCA5A5;line-height:1.7;}
-
-/* Results */
 .res-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px;}
 .res-head h2{font-size:20px;font-weight:800;letter-spacing:-.4px;}
 .res-head p{font-size:12px;color:var(--muted);margin-top:2px;}
 .exp-btn{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;}
 .exp-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;}
 .exp-btn:hover{border-color:var(--border-h);background:var(--border);}
-
 .scores{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
 .sc{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:14px;text-align:center;}
 .sc-n{font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:3px;}
 .sc-l{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
 .sc.r .sc-n{color:var(--red);}.sc.o .sc-n{color:var(--orange);}.sc.y .sc-n{color:var(--yellow);}.sc.t .sc-n{font-size:16px;letter-spacing:-.3px;}
-
 .banner{display:flex;align-items:flex-start;gap:12px;border-radius:11px;padding:14px 18px;margin-bottom:18px;border:1px solid;}
 .banner.HIGH{background:var(--red-bg);border-color:var(--red);}
 .banner.MEDIUM{background:var(--orange-bg);border-color:var(--orange);}
@@ -117,7 +90,6 @@ textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-siz
 .ban-ico{font-size:22px;flex-shrink:0;line-height:1;}
 .banner strong{font-size:14px;font-weight:700;display:block;margin-bottom:2px;}
 .banner p{font-size:12px;opacity:.9;line-height:1.65;}
-
 .filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
 .chip{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
 .chip:hover{color:var(--text);border-color:var(--border-h);}
@@ -125,7 +97,6 @@ textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-siz
 .chip.active.h{color:var(--red);border-color:var(--red);background:var(--red-bg);}
 .chip.active.m{color:var(--orange);border-color:var(--orange);background:var(--orange-bg);}
 .chip.active.l{color:var(--yellow);border-color:var(--yellow);background:var(--yellow-bg);}
-
 .flags-title{font-size:13px;font-weight:700;margin-bottom:10px;}
 .flag{background:var(--card);border:1px solid var(--border);border-radius:11px;margin-bottom:9px;overflow:hidden;transition:border-color .15s;}
 .flag:hover{border-color:var(--border-h);}
@@ -143,11 +114,9 @@ textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-siz
 .fclause{background:var(--bg);border-left:3px solid var(--border-h);border-radius:0 5px 5px 0;padding:9px 12px;margin:10px 0;font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);line-height:1.8;font-style:italic;}
 .fexp{font-size:12px;color:#C4C9DC;line-height:1.75;margin-bottom:9px;}
 .frec{display:flex;gap:8px;align-items:flex-start;background:var(--accent-bg);border:1px solid rgba(99,102,241,.25);border-radius:7px;padding:9px 12px;font-size:11px;color:#A5B4FC;line-height:1.65;}
-
 .summary{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:18px;margin-top:20px;}
 .summary h3{font-size:13px;font-weight:700;margin-bottom:8px;}
 .summary p{font-size:12px;color:#C4C9DC;line-height:1.75;}
-
 @media(max-width:860px){.layout{grid-template-columns:1fr;}.left{height:auto;}.scores{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
@@ -162,25 +131,22 @@ textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-siz
 </header>
 
 <div class="layout">
-  <!-- LEFT PANEL -->
   <div class="left">
-    <!-- API Key -->
     <div>
       <div class="lbl">OpenAI API Key</div>
       <div class="key-row">
-        <input type="password" id="apiKey" placeholder="sk-..." />
+        <input type="password" id="apiKey" placeholder="sk-proj-..."/>
         <button class="tog" onclick="toggleKey()">Show</button>
       </div>
     </div>
 
-    <!-- Upload -->
     <div>
-      <div class="lbl">Upload Contract (PDF / TXT)</div>
+      <div class="lbl">Upload Contract (PDF / DOCX / TXT)</div>
       <div class="upload" id="uploadZone">
-        <input type="file" accept=".pdf,.txt" id="fileInput" onchange="handleFile(event)"/>
+        <input type="file" accept=".pdf,.docx,.txt" id="fileInput" onchange="handleFile(event)"/>
         <div id="uploadContent">
           <div class="up-icon"><svg viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg></div>
-          <div class="up-title">Drop PDF or TXT here</div>
+          <div class="up-title">Drop PDF, DOCX or TXT here</div>
           <div class="up-sub">or click to browse</div>
         </div>
         <div class="up-file" id="fileName"></div>
@@ -189,95 +155,106 @@ textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-siz
 
     <div class="div"><span>or paste text</span></div>
 
-    <!-- Text -->
     <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
       <div class="lbl">Contract Text <span id="charCount">0 chars</span></div>
       <textarea id="contractText" placeholder="Paste your contract text here..." oninput="updateCount()"></textarea>
     </div>
 
-    <!-- Button -->
     <button class="btn" id="analyzeBtn" onclick="analyze()">
       <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg>
       Analyze Contract
     </button>
   </div>
 
-  <!-- RIGHT PANEL -->
   <div class="right" id="right">
     <div class="empty">
       <div class="empty-ico">
         <svg viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
       </div>
       <h2>No Contract Analyzed Yet</h2>
-      <p>Enter your OpenAI API key, upload a PDF or paste contract text, then click <strong>Analyze Contract</strong>.</p>
+      <p>Enter your OpenAI API key, upload a PDF/DOCX or paste contract text, then click <strong>Analyze Contract</strong>.</p>
     </div>
   </div>
 </div>
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+let lastResults=null;
 
-let lastResults = null;
-let currentFilter = 'ALL';
+const zone=document.getElementById('uploadZone');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over');});
+zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');processFile(e.dataTransfer.files[0]);});
 
-// Drag and drop
-const zone = document.getElementById('uploadZone');
-zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
-zone.addEventListener('dragleave', () => zone.classList.remove('over'));
-zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('over'); processFile(e.dataTransfer.files[0]); });
-
-function toggleKey() {
-  const inp = document.getElementById('apiKey');
-  const btn = event.target;
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+function toggleKey(){
+  const inp=document.getElementById('apiKey'),btn=event.target;
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'Show':'Hide';
 }
 
-function updateCount() {
-  document.getElementById('charCount').textContent = document.getElementById('contractText').value.length.toLocaleString() + ' chars';
+function updateCount(){
+  document.getElementById('charCount').textContent=document.getElementById('contractText').value.length.toLocaleString()+' chars';
 }
 
-async function handleFile(e) { processFile(e.target.files[0]); }
+async function handleFile(e){processFile(e.target.files[0]);}
 
-async function processFile(file) {
-  if (!file) return;
-  document.getElementById('fileName').textContent = '⏳ Reading...';
-  try {
-    let text = '';
-    if (file.name.endsWith('.pdf')) {
-      const buf = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-      const pages = [];
-      for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
-        const pg = await pdf.getPage(i);
-        const ct = await pg.getTextContent();
-        pages.push(ct.items.map(x => x.str).join(' '));
+async function processFile(file){
+  if(!file)return;
+  const name=file.name.toLowerCase();
+  document.getElementById('fileName').textContent='⏳ Reading...';
+  zone.classList.remove('loaded');
+  try{
+    let text='';
+    if(name.endsWith('.pdf')){
+      const buf=await file.arrayBuffer();
+      const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+      const pages=[];
+      for(let i=1;i<=Math.min(pdf.numPages,20);i++){
+        const pg=await pdf.getPage(i);
+        const ct=await pg.getTextContent();
+        pages.push(ct.items.map(x=>x.str).join(' '));
       }
-      text = pages.join('\n\n');
+      text=pages.join('\n\n');
+    } else if(name.endsWith('.docx')){
+      const buf=await file.arrayBuffer();
+      const result=await mammoth.extractRawText({arrayBuffer:buf});
+      text=result.value;
     } else {
-      text = await file.text();
+      text=await file.text();
     }
-    document.getElementById('contractText').value = text;
+    if(!text||text.trim().length<50){
+      document.getElementById('fileName').textContent='❌ Could not extract text — try pasting instead';
+      return;
+    }
+    document.getElementById('contractText').value=text;
     updateCount();
-    document.getElementById('fileName').textContent = '✅ ' + file.name;
+    document.getElementById('fileName').textContent='✅ '+file.name;
     zone.classList.add('loaded');
-  } catch(e) {
-    document.getElementById('fileName').textContent = '❌ Could not read file';
+  } catch(e){
+    document.getElementById('fileName').textContent='❌ Error: '+e.message;
   }
 }
 
-async function analyze() {
-  const key = document.getElementById('apiKey').value.trim();
-  const text = document.getElementById('contractText').value.trim();
-  if (!key) { alert('Please enter your OpenAI API key.'); return; }
-  if (text.length < 80) { alert('Please provide contract text to analyze.'); return; }
+async function analyze(){
+  const key=document.getElementById('apiKey').value.trim();
+  const text=document.getElementById('contractText').value.trim();
+  if(!key||!key.startsWith('sk-')){alert('Please enter a valid OpenAI API key (starts with sk-).');return;}
+  if(text.length<80){alert('Please provide more contract text.');return;}
 
   setLoading(true);
-  showScanning();
+  document.getElementById('right').innerHTML=`
+    <div class="scanning">
+      <div class="scan-doc">
+        <div class="scan-beam"></div>
+        ${[100,70,90,60,85,75,65].map((w,i)=>`<div class="scan-line" style="width:${w}%;animation-delay:${i*0.18}s"></div>`).join('')}
+      </div>
+      <h3>Analyzing Contract...</h3>
+      <p>AI is reading every clause and detecting red flags</p>
+    </div>`;
 
-  const prompt = `You are a senior legal risk analyst. Analyze this contract and identify risky or one-sided clauses.
+  const prompt=`You are a senior legal risk analyst. Analyze this contract and identify risky or one-sided clauses.
 
-Return ONLY valid JSON (no markdown, no extra text) with this exact schema:
+Return ONLY valid JSON (no markdown) with this schema:
 {
   "overall_risk": "HIGH"|"MEDIUM"|"LOW"|"SAFE",
   "overall_summary": "2-3 sentence plain-English summary",
@@ -290,79 +267,59 @@ Return ONLY valid JSON (no markdown, no extra text) with this exact schema:
       "title": "Short title",
       "clause_excerpt": "Relevant quote (max 80 words)",
       "explanation": "Plain-English explanation of why this is risky",
-      "recommendation": "What the signer should do or negotiate"
+      "recommendation": "What the signer should do"
     }
   ]
 }
 
-Order by risk level (HIGH first). Be thorough.
+Order by risk (HIGH first). Be thorough.
 
 CONTRACT:
 ---
-${text.substring(0, 12000)}
+${text.substring(0,12000)}
 ---`;
 
-  try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
-        max_tokens: 3000,
-        response_format: { type: 'json_object' }
-      })
+  try{
+    const res=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({model:'gpt-4o',messages:[{role:'user',content:prompt}],temperature:0.2,max_tokens:3000,response_format:{type:'json_object'}})
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error?.message || 'OpenAI API error');
-    const result = JSON.parse(data.choices[0].message.content);
-    lastResults = result;
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error?.message||'OpenAI error: '+res.status);
+    const result=JSON.parse(data.choices[0].message.content);
+    lastResults=result;
     showResults(result);
-  } catch(e) {
-    showError(e.message);
+  }catch(e){
+    document.getElementById('right').innerHTML=`<div style="padding:20px"><div class="err"><strong>Analysis failed:</strong> ${esc(e.message)}<br/><br/>
+    Common fixes:<br/>
+    • Make sure your API key is correct and starts with <code>sk-</code><br/>
+    • Check you have OpenAI credits at <a href="https://platform.openai.com/usage" target="_blank" style="color:#93C5FD">platform.openai.com/usage</a><br/>
+    • Try pasting the contract text instead of uploading</div></div>`;
   }
   setLoading(false);
 }
 
-function setLoading(on) {
-  const btn = document.getElementById('analyzeBtn');
-  btn.disabled = on;
-  btn.innerHTML = on
-    ? '<div class="spin"></div> Analyzing...'
-    : '<svg viewBox="0 0 24 24" stroke-width="2" stroke="white" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg> Analyze Contract';
+function setLoading(on){
+  const btn=document.getElementById('analyzeBtn');
+  btn.disabled=on;
+  btn.innerHTML=on?'<div class="spin"></div> Analyzing...':'<svg viewBox="0 0 24 24" stroke-width="2" stroke="white" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z"/></svg> Analyze Contract';
 }
 
-function showScanning() {
-  document.getElementById('right').innerHTML = `
-    <div class="scanning">
-      <div class="scan-doc">
-        <div class="scan-beam"></div>
-        ${[100,70,90,60,85,75,65].map((w,i) => `<div class="scan-line" style="width:${w}%;animation-delay:${i*0.18}s"></div>`).join('')}
-      </div>
-      <h3>Analyzing Contract...</h3>
-      <p>AI is reading every clause and detecting red flags</p>
-    </div>`;
-}
+function showResults(r){
+  const flags=r.flags||[];
+  const high=flags.filter(f=>f.risk_level==='HIGH').length;
+  const med=flags.filter(f=>f.risk_level==='MEDIUM').length;
+  const low=flags.filter(f=>f.risk_level==='LOW').length;
+  const emo={HIGH:'🚨',MEDIUM:'⚠️',LOW:'📋',SAFE:'✅'};
+  const lbl={HIGH:'High Risk — Immediate Review Needed',MEDIUM:'Medium Risk — Clauses Need Attention',LOW:'Low Risk — Minor Issues Found',SAFE:'No Major Issues Detected'};
 
-function showError(msg) {
-  document.getElementById('right').innerHTML = `<div style="padding:20px"><div class="err"><strong>Analysis failed:</strong> ${esc(msg)}<br/><br/>Check your API key and try again.</div></div>`;
-}
-
-function showResults(r) {
-  const flags = r.flags || [];
-  const high = flags.filter(f => f.risk_level === 'HIGH').length;
-  const med  = flags.filter(f => f.risk_level === 'MEDIUM').length;
-  const low  = flags.filter(f => f.risk_level === 'LOW').length;
-  const emo  = { HIGH:'🚨', MEDIUM:'⚠️', LOW:'📋', SAFE:'✅' };
-  const lbl  = { HIGH:'High Risk — Immediate Review Needed', MEDIUM:'Medium Risk — Clauses Need Attention', LOW:'Low Risk — Minor Issues Found', SAFE:'No Major Issues Detected' };
-
-  document.getElementById('right').innerHTML = `
+  document.getElementById('right').innerHTML=`
     <div class="res-head">
       <div><h2>Risk Analysis</h2><p>${flags.length} clause${flags.length!==1?'s':''} flagged · ${r.contract_type||'Contract'}</p></div>
       <button class="exp-btn" onclick="exportReport()">
         <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-        Export
+        Export Report
       </button>
     </div>
     <div class="scores">
@@ -375,16 +332,16 @@ function showResults(r) {
       <span class="ban-ico">${emo[r.overall_risk]||'📋'}</span>
       <div><strong>${lbl[r.overall_risk]||r.overall_risk}</strong><p>${esc(r.overall_summary)}</p></div>
     </div>
-    ${flags.length > 0 ? `
+    ${flags.length>0?`
     <div class="filters">
-      <button class="chip active" onclick="filter('ALL',this)">All (${flags.length})</button>
-      ${high>0?`<button class="chip h" onclick="filter('HIGH',this)">🔴 High (${high})</button>`:''}
-      ${med>0?`<button class="chip m" onclick="filter('MEDIUM',this)">🟠 Med (${med})</button>`:''}
-      ${low>0?`<button class="chip l" onclick="filter('LOW',this)">🟡 Low (${low})</button>`:''}
+      <button class="chip active" onclick="setFilter('ALL',this)">All (${flags.length})</button>
+      ${high>0?`<button class="chip h" onclick="setFilter('HIGH',this)">🔴 High (${high})</button>`:''}
+      ${med>0?`<button class="chip m" onclick="setFilter('MEDIUM',this)">🟠 Med (${med})</button>`:''}
+      ${low>0?`<button class="chip l" onclick="setFilter('LOW',this)">🟡 Low (${low})</button>`:''}
     </div>
     <div class="flags-title">🚩 Flagged Clauses</div>
     <div id="flagsList">
-      ${flags.map((f,i) => `
+      ${flags.map((f,i)=>`
         <div class="flag" id="fl${i}" data-risk="${f.risk_level}">
           <button class="fh" onclick="tog(${i})">
             <span class="badge ${f.risk_level}">${f.risk_level}</span>
@@ -398,52 +355,46 @@ function showResults(r) {
             ${f.recommendation?`<div class="frec">💡 <span>${esc(f.recommendation)}</span></div>`:''}
           </div>
         </div>`).join('')}
-    </div>` : '<p style="color:var(--muted);font-size:13px">No red flags detected.</p>'}
+    </div>`:'<p style="color:var(--muted);font-size:13px">No red flags detected.</p>'}
     <div class="summary"><h3>📋 Summary</h3><p>${esc(r.overall_summary)}</p></div>`;
 
-  // Auto-open first HIGH
-  const firstHigh = flags.findIndex(f => f.risk_level === 'HIGH');
-  if (firstHigh >= 0) tog(firstHigh);
+  const firstHigh=flags.findIndex(f=>f.risk_level==='HIGH');
+  if(firstHigh>=0)tog(firstHigh);
 }
 
-function tog(i) {
-  const card = document.getElementById('fl'+i);
-  const body = document.getElementById('fb'+i);
-  const open = body.style.display === 'block';
-  body.style.display = open ? 'none' : 'block';
-  card.className = `flag ${open ? '' : card.dataset.risk} ${open ? '' : 'open'}`;
+function tog(i){
+  const card=document.getElementById('fl'+i),body=document.getElementById('fb'+i);
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  card.className=`flag ${open?'':card.dataset.risk+' open'}`;
 }
 
-function filter(level, el) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+function setFilter(level,el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  document.querySelectorAll('.flag').forEach(c => {
-    c.style.display = (level === 'ALL' || c.dataset.risk === level) ? '' : 'none';
-  });
+  document.querySelectorAll('.flag').forEach(c=>{c.style.display=(level==='ALL'||c.dataset.risk===level)?'':'none';});
 }
 
-function exportReport() {
-  if (!lastResults) return;
-  const f = lastResults.flags || [];
-  let r = `FLAGAI — CONTRACT RISK REPORT\n${'='.repeat(50)}\n\n`;
-  r += `CONTRACT TYPE: ${lastResults.contract_type||'Unknown'}\nOVERALL RISK: ${lastResults.overall_risk}\n\n`;
-  r += `SUMMARY:\n${lastResults.overall_summary}\n\n${'='.repeat(50)}\nFLAGGED CLAUSES (${f.length})\n\n`;
-  f.forEach((x,i) => {
-    r += `[${x.risk_level}] ${i+1}. ${x.title}\n`;
-    if (x.clause_excerpt) r += `   Clause: "${x.clause_excerpt}"\n`;
-    r += `   Issue: ${x.explanation}\n`;
-    if (x.recommendation) r += `   Recommendation: ${x.recommendation}\n`;
-    r += '\n';
+function exportReport(){
+  if(!lastResults)return;
+  const f=lastResults.flags||[];
+  let r=`FLAGAI — CONTRACT RISK REPORT\n${'='.repeat(50)}\n\n`;
+  r+=`CONTRACT TYPE: ${lastResults.contract_type||'Unknown'}\nOVERALL RISK: ${lastResults.overall_risk}\n\n`;
+  r+=`SUMMARY:\n${lastResults.overall_summary}\n\n${'='.repeat(50)}\nFLAGGED CLAUSES (${f.length})\n\n`;
+  f.forEach((x,i)=>{
+    r+=`[${x.risk_level}] ${i+1}. ${x.title}\n`;
+    if(x.clause_excerpt)r+=`   Clause: "${x.clause_excerpt}"\n`;
+    r+=`   Issue: ${x.explanation}\n`;
+    if(x.recommendation)r+=`   Recommendation: ${x.recommendation}\n`;
+    r+='\n';
   });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([r], { type:'text/plain' }));
-  a.download = 'flagAI-risk-report.txt';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([r],{type:'text/plain'}));
+  a.download='flagAI-risk-report.txt';
   a.click();
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 </script>
 </body>
 </html>
