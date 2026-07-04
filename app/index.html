@@ -133,9 +133,9 @@ textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-siz
 <div class="layout">
   <div class="left">
     <div>
-      <div class="lbl">Groq API Key</div>
+      <div class="lbl">Google Gemini API Key</div>
       <div class="key-row">
-        <input type="password" id="apiKey" placeholder="gsk_..."/>
+        <input type="password" id="apiKey" placeholder="AIza..."/>
         <button class="tog" onclick="toggleKey()">Show</button>
       </div>
     </div>
@@ -238,7 +238,7 @@ async function processFile(file){
 async function analyze(){
   const key=document.getElementById('apiKey').value.trim();
   const text=document.getElementById('contractText').value.trim();
-  if(!key||!key.startsWith('gsk_')){alert('Please enter a valid OpenAI API key (starts with gsk_).');return;}
+  if(!key||!key.startsWith('AIza')){alert('Please enter a valid OpenAI API key (starts with AIza).');return;}
   if(text.length<80){alert('Please provide more contract text.');return;}
 
   setLoading(true);
@@ -280,21 +280,26 @@ ${text.substring(0,12000)}
 ---`;
 
   try{
-    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+key,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:prompt}],temperature:0.2,max_tokens:3000})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{temperature:0.2,maxOutputTokens:3000,responseMimeType:'application/json'}
+      })
     });
     const data=await res.json();
-    if(!res.ok)throw new Error(data.error?.message||'OpenAI error: '+res.status);
-    const result=JSON.parse(data.choices[0].message.content);
+    if(!res.ok)throw new Error(data.error?.message||'Gemini API error: '+res.status);
+    const rawText=data.candidates[0].content.parts[0].text;
+    const clean=rawText.replace(/```json/g,'').replace(/```/g,'').trim();
+    const result=JSON.parse(clean);
     lastResults=result;
     showResults(result);
   }catch(e){
     document.getElementById('right').innerHTML=`<div style="padding:20px"><div class="err"><strong>Analysis failed:</strong> ${esc(e.message)}<br/><br/>
     Common fixes:<br/>
     • Make sure your API key is correct and starts with <code>sk-</code><br/>
-    • Check you have OpenAI credits at <a href="https://console.groq.com" target="_blank" style="color:#93C5FD">console.groq.com</a><br/>
+    • Check you have OpenAI credits at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#93C5FD">aistudio.google.com/apikey</a><br/>
     • Try pasting the contract text instead of uploading</div></div>`;
   }
   setLoading(false);
