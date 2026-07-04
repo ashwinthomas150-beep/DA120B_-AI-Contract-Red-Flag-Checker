@@ -133,9 +133,9 @@ textarea::placeholder{color:var(--muted);font-family:'Inter',sans-serif;font-siz
 <div class="layout">
   <div class="left">
     <div>
-      <div class="lbl">Hugging Face API Key</div>
+      <div class="lbl">Groq API Key</div>
       <div class="key-row">
-        <input type="password" id="apiKey" placeholder="hf_..."/>
+        <input type="password" id="apiKey" placeholder="gsk_..."/>
         <button class="tog" onclick="toggleKey()">Show</button>
       </div>
     </div>
@@ -238,7 +238,7 @@ async function processFile(file){
 async function analyze(){
   const key=document.getElementById('apiKey').value.trim();
   const text=document.getElementById('contractText').value.trim();
-  if(!key||!key.startsWith('hf_')){alert('Please enter a valid OpenAI API key (starts with hf_).');return;}
+  if(!key||!key.startsWith('gsk_')){alert('Please enter a valid OpenAI API key (starts with gsk_).');return;}
   if(text.length<80){alert('Please provide more contract text.');return;}
 
   setLoading(true);
@@ -280,19 +280,18 @@ ${text.substring(0,12000)}
 ---`;
 
   try{
-    const res=await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions',{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
       body:JSON.stringify({
-        model:'mistralai/Mistral-7B-Instruct-v0.3',
+        model:'llama-3.3-70b-versatile',
         messages:[{role:'user',content:prompt}],
         temperature:0.2,
-        max_tokens:3000,
-        stream:false
+        max_tokens:3000
       })
     });
     const data=await res.json();
-    if(!res.ok)throw new Error(data.error?.message||'HuggingFace error: '+res.status);
+    if(!res.ok)throw new Error(data.error?.message||'Groq error: '+res.status);
     const rawText=data.choices[0].message.content;
     const clean=rawText.replace(/```json/g,'').replace(/```/g,'').trim();
     const jsonMatch=clean.match(/\{[\s\S]*\}/);
@@ -304,7 +303,7 @@ ${text.substring(0,12000)}
     document.getElementById('right').innerHTML=`<div style="padding:20px"><div class="err"><strong>Analysis failed:</strong> ${esc(e.message)}<br/><br/>
     Common fixes:<br/>
     • Make sure your API key is correct and starts with <code>sk-</code><br/>
-    • Check you have OpenAI credits at <a href="https://huggingface.co/settings/tokens" target="_blank" style="color:#93C5FD">huggingface.co/settings/tokens</a><br/>
+    • Check you have OpenAI credits at <a href="https://console.groq.com/keys" target="_blank" style="color:#93C5FD">console.groq.com/keys</a><br/>
     • Try pasting the contract text instead of uploading</div></div>`;
   }
   setLoading(false);
