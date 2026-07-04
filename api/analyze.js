@@ -1,3 +1,4 @@
+// AI Integration & Prompt Engineering — Ashwin Thomas
 const https = require("https");
 
 module.exports = async (req, res) => {
